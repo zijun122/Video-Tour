@@ -60,16 +60,23 @@
     body.dark .subtitle {
       color: var(--gray-400);
     }
-    /* 底图区域 */
+    /* 主容器，左右布局（改为 align-items: flex-start 使两侧高度独立） */
+    .main-container {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    /* 左侧图片区域 */
     .kv-container {
+      flex: 1;
       position: relative;
       border-radius: var(--border-radius);
       overflow: hidden;
       box-shadow: var(--card-shadow);
       background-color: var(--bg-light);
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto;
+      /* 固定16:9的比例 */
       aspect-ratio: 16/9;
     }
     body.dark .kv-container {
@@ -104,7 +111,6 @@
       border-color: var(--accent);
       background-color: rgba(0, 113, 227, 0.15);
     }
-    /* 小蒙版效果 */
     .highlight-area::after {
       content: "";
       position: absolute;
@@ -151,79 +157,52 @@
       letter-spacing: 0.2px;
       pointer-events: none;
     }
-    /* Modal遮罩层及下滑板 */
-    #modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 100;
-      display: none;
-    }
-    #modal-panel {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-height: 90%;
+    /* 右侧信息栏：初始宽度为 0，展开时宽度固定，不会遮挡左侧图片 */
+    .info-panel {
+      width: 0;
+      overflow: hidden;
+      transition: width 0.3s ease-out;
       background-color: var(--bg-light);
       border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
-      transform: translateY(100%);
-      transition: transform 0.3s ease-out;
-      overflow-y: auto;
+      border-bottom-left-radius: 20px;
+      box-shadow: -4px 0 16px rgba(0, 0, 0, 0.2);
     }
-    #modal-panel.show {
-      transform: translateY(0);
-    }
-    body.dark #modal-panel {
+    body.dark .info-panel {
       background-color: var(--black);
     }
-    .modal-header {
+    .info-panel.show {
+      width: 400px;
+    }
+    .info-header {
       position: relative;
-      padding-bottom: 10px;
+      padding: 10px;
       border-bottom: 1px solid var(--gray-200);
       margin-bottom: 10px;
     }
-    body.dark .modal-header {
+    body.dark .info-header {
       border-bottom: 1px solid var(--gray-800);
     }
-    .modal-header .drag-bar {
+    .drag-bar {
       width: 50px;
       height: 4px;
       background-color: var(--gray-300);
       border-radius: 2px;
       margin: 0 auto;
     }
-    .modal-header button {
+    .close-button {
       position: absolute;
-      top: 0;
-      right: 0;
-      background: none;
-      border: none;
-      font-size: 28px;
-      line-height: 1;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
       cursor: pointer;
       color: var(--text-light);
     }
-    body.dark .modal-header button {
+    body.dark .close-button {
       color: var(--text-dark);
     }
-    /* 主菜单（Super 与 尾板） */
-    #modal-main-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      align-items: center;
-      padding: 20px;
-    }
+    /* 信息栏中按钮 */
     .menu-item {
       width: 100%;
-      max-width: 400px;
       padding: 20px;
       background-color: var(--gray-100);
       border: 1px solid var(--gray-200);
@@ -234,8 +213,8 @@
       cursor: pointer;
       transition: background-color 0.2s, transform 0.2s;
       color: var(--text-light);
+      margin-bottom: 20px;
     }
-    /* 暗黑模式下的菜单项调整 */
     body.dark .menu-item {
       background-color: var(--gray-800);
       border-color: var(--gray-700);
@@ -327,6 +306,15 @@
     .hidden {
       display: none;
     }
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+      }
+      .info-panel.show {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -345,26 +333,25 @@
     <p class="subtitle">点击图中热区，查看详细说明</p>
   </header>
 
-  <!-- 底图区域 -->
-  <div class="kv-container">
-    <img src="bottom.jpg" alt="底图" class="kv-image">
-    <div class="highlight-area" id="editable-hotspot-2">
-      <div class="highlight-label">Disclaimer</div>
-    </div>
-    <div class="tooltip" id="tooltip">点击图中热区，查看详细说明</div>
-  </div>
-
-  <!-- Modal遮罩层及下滑板 -->
-  <div id="modal-overlay">
-    <div id="modal-panel">
-      <div class="modal-header">
-        <div class="drag-bar"></div>
-        <button id="modal-close" title="关闭详情">×</button>
+  <div class="main-container">
+    <!-- 左侧图片区域 -->
+    <div class="kv-container">
+      <img src="bottom.jpg" alt="底图" class="kv-image">
+      <div class="highlight-area" id="editable-hotspot-2">
+        <div class="highlight-label">Disclaimer</div>
       </div>
-      <!-- 模态窗口内容区域 -->
-      <div id="modal-content-container">
+      <div class="tooltip" id="tooltip">点击图中热区，查看详细说明</div>
+    </div>
+
+    <!-- 右侧信息栏 -->
+    <div class="info-panel" id="info-panel">
+      <div class="info-header">
+        <div class="drag-bar"></div>
+        <span class="close-button" id="info-close" title="关闭信息栏">×</span>
+      </div>
+      <div id="info-content">
         <!-- 初始为主菜单 -->
-        <div id="modal-main-menu">
+        <div id="info-main-menu">
           <div class="menu-item" id="menu-super">Super</div>
           <div class="menu-item" id="menu-tailboard">尾板</div>
         </div>
@@ -379,10 +366,9 @@
       const darkIcon = document.getElementById("dark-icon");
       const tooltip = document.getElementById("tooltip");
       const highlightArea = document.getElementById("editable-hotspot-2");
-      const modalOverlay = document.getElementById("modal-overlay");
-      const modalPanel = document.getElementById("modal-panel");
-      const modalContentContainer = document.getElementById("modal-content-container");
-      const modalClose = document.getElementById("modal-close");
+      const infoPanel = document.getElementById("info-panel");
+      const infoContent = document.getElementById("info-content");
+      const infoClose = document.getElementById("info-close");
 
       // 隐藏 tooltip
       setTimeout(() => {
@@ -390,35 +376,20 @@
         setTimeout(() => { tooltip.style.display = "none"; }, 500);
       }, 3000);
 
-      // 点击热区时显示 modal（初始状态为主菜单）
+      // 点击热区时显示信息栏
       highlightArea.addEventListener("click", function (e) {
         e.stopPropagation();
         this.classList.add("active");
-        modalOverlay.style.display = "block";
-        setTimeout(() => {
-          modalPanel.classList.add("show");
-        }, 10);
+        infoPanel.classList.add("show");
       });
 
-      // 关闭 modal
-      modalClose.addEventListener("click", function (e) {
+      // 点击关闭按钮，收起信息栏
+      infoClose.addEventListener("click", function (e) {
         e.stopPropagation();
-        closeModal();
+        infoPanel.classList.remove("show");
+        highlightArea.classList.remove("active");
+        resetMainMenu();
       });
-      modalOverlay.addEventListener("click", function (e) {
-        if (e.target === modalOverlay) {
-          closeModal();
-        }
-      });
-      function closeModal() {
-        modalPanel.classList.remove("show");
-        setTimeout(() => {
-          modalOverlay.style.display = "none";
-          // 恢复主菜单状态
-          showMainMenu();
-          highlightArea.classList.remove("active");
-        }, 300);
-      }
 
       // 主菜单事件监听
       document.getElementById("menu-super").addEventListener("click", function () {
@@ -428,13 +399,13 @@
         showDetail("tailboard");
       });
 
-      // 显示详情内容，type 可选 "super" 或 "tailboard"
+      // 显示详情内容（type 可为 "super" 或 "tailboard"）
       function showDetail(type) {
         let detailContent = "";
         if (type === "super") {
           detailContent = `
           <div class="detail-section">
-            <span class="back-button" id="modal-back">&larr; 返回</span>
+            <span class="back-button" id="info-back">&larr; 返回</span>
             <h3>一、Super</h3>
             <ul>
               <li>
@@ -486,7 +457,7 @@
         } else if (type === "tailboard") {
           detailContent = `
           <div class="detail-section">
-            <span class="back-button" id="modal-back">&larr; 返回</span>
+            <span class="back-button" id="info-back">&larr; 返回</span>
             <h3>二、尾板</h3>
             <ul>
               <li>
@@ -518,17 +489,17 @@
             </ul>
           </div>`;
         }
-        modalContentContainer.innerHTML = detailContent;
-        // 为返回按钮添加点击事件
-        document.getElementById("modal-back").addEventListener("click", function () {
-          showMainMenu();
+        infoContent.innerHTML = detailContent;
+        // 为返回按钮添加点击事件，返回主菜单
+        document.getElementById("info-back").addEventListener("click", function () {
+          resetMainMenu();
         });
       }
 
       // 恢复显示主菜单内容
-      function showMainMenu() {
-        modalContentContainer.innerHTML = `
-          <div id="modal-main-menu">
+      function resetMainMenu() {
+        infoContent.innerHTML = `
+          <div id="info-main-menu">
             <div class="menu-item" id="menu-super">Super</div>
             <div class="menu-item" id="menu-tailboard">尾板</div>
           </div>
