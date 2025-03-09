@@ -1,0 +1,595 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>视频Super及尾板GuideTour</title>
+  <style>
+    :root {
+      --sf-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      --gray-50: #F9F9F9;
+      --gray-100: #F2F2F7;
+      --gray-200: #E5E5EA;
+      --gray-300: #D1D1D6;
+      --gray-400: #C7C7CC;
+      --gray-500: #AEAEB2;
+      --gray-600: #8E8E93;
+      --gray-700: #636366;
+      --gray-800: #3A3A3C;
+      --gray-900: #2C2C2E;
+      --black: #1C1C1E;
+      --bg-light: #FFFFFF;
+      --bg-dark: #000000;
+      --text-light: #1C1C1E;
+      --text-dark: #F2F2F7;
+      --border-radius: 14px;
+      --card-shadow: 0 1px 8px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.08);
+      --dark-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      --accent: #0071e3;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: var(--sf-font);
+    }
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      line-height: 1.5;
+      transition: background-color 0.3s, color 0.3s;
+      padding: 20px;
+    }
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 18px;
+      color: var(--gray-700);
+      font-weight: 400;
+    }
+    body.dark .subtitle {
+      color: var(--gray-400);
+    }
+    /* 底图区域 */
+    .kv-container {
+      position: relative;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      background-color: var(--bg-light);
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      aspect-ratio: 16/9;
+    }
+    body.dark .kv-container {
+      box-shadow: var(--dark-shadow);
+      background-color: var(--black);
+    }
+    .kv-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* 热区样式 */
+    .highlight-area {
+      position: absolute;
+      left: 72.34%;
+      top: 71.91%;
+      width: 25.05%;
+      height: 23.62%;
+      border: 2px solid transparent;
+      background-color: rgba(0, 0, 0, 0); 
+      cursor: pointer;
+      z-index: 10;
+      border-radius: 8px;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .highlight-area:hover {
+      border-color: var(--accent);
+      background-color: rgba(0, 113, 227, 0.1);
+    }
+    .highlight-area.active {
+      border-color: var(--accent);
+      background-color: rgba(0, 113, 227, 0.15);
+    }
+    /* 小蒙版效果 */
+    .highlight-area::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: inherit;
+      pointer-events: none;
+      transition: background-color 0.2s;
+    }
+    .highlight-area:hover::after {
+      background-color: rgba(0, 0, 0, 0.15);
+    }
+    .highlight-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: var(--accent);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 0 8px 8px 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .highlight-area:hover .highlight-label,
+    .highlight-area.active .highlight-label {
+      opacity: 1;
+    }
+    .tooltip {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0.95;
+      z-index: 25;
+      letter-spacing: 0.2px;
+      pointer-events: none;
+    }
+    /* Modal遮罩层及下滑板 */
+    #modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      display: none;
+    }
+    #modal-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 90%;
+      background-color: var(--bg-light);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
+      transform: translateY(100%);
+      transition: transform 0.3s ease-out;
+      overflow-y: auto;
+    }
+    #modal-panel.show {
+      transform: translateY(0);
+    }
+    body.dark #modal-panel {
+      background-color: var(--black);
+    }
+    .modal-header {
+      position: relative;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: 10px;
+    }
+    body.dark .modal-header {
+      border-bottom: 1px solid var(--gray-800);
+    }
+    .modal-header .drag-bar {
+      width: 50px;
+      height: 4px;
+      background-color: var(--gray-300);
+      border-radius: 2px;
+      margin: 0 auto;
+    }
+    .modal-header button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: none;
+      border: none;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+    body.dark .modal-header button {
+      color: var(--text-dark);
+    }
+    /* 主菜单（Super 与 尾板） */
+    #modal-main-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      padding: 20px;
+    }
+    .menu-item {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+      background-color: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+      color: var(--text-light);
+    }
+    /* 暗黑模式下的菜单项调整 */
+    body.dark .menu-item {
+      background-color: var(--gray-800);
+      border-color: var(--gray-700);
+      color: var(--text-dark);
+    }
+    .menu-item:hover {
+      background-color: var(--accent);
+      color: white;
+      transform: scale(1.02);
+    }
+    /* 详情页面样式 */
+    .detail-section {
+      padding: 10px;
+    }
+    .detail-section h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+    .detail-section ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .detail-section ul li {
+      margin-bottom: 14px;
+    }
+    .detail-section ul li strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .back-button {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .detail-box {
+      margin-top: 6px;
+      padding: 10px;
+      background-color: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+    body.dark .detail-box {
+      background-color: var(--gray-700);
+      border-color: var(--gray-600);
+      color: var(--text-dark);
+    }
+    /* 主题切换按钮 */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--bg-light);
+      border: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 30;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    body.dark .theme-toggle {
+      background-color: var(--gray-900);
+      border-color: var(--gray-800);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .theme-toggle:hover {
+      transform: scale(1.05);
+    }
+    .theme-toggle:active {
+      transform: scale(0.95);
+    }
+    .icon {
+      width: 22px;
+      height: 22px;
+      stroke-width: 1.5;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- 主题切换按钮 -->
+  <button class="theme-toggle" id="theme-toggle" title="切换暗黑/亮色模式">
+    <svg xmlns="http://www.w3.org/2000/svg" id="light-icon" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0"></path>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" id="dark-icon" class="icon hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+    </svg>
+  </button>
+
+  <header>
+    <h1>视频Super及尾板GuideTour</h1>
+    <p class="subtitle">点击图中热区，查看详细说明</p>
+  </header>
+
+  <!-- 底图区域 -->
+  <div class="kv-container">
+    <img src="bottom.jpg" alt="底图" class="kv-image">
+    <div class="highlight-area" id="editable-hotspot-2">
+      <div class="highlight-label">Disclaimer</div>
+    </div>
+    <div class="tooltip" id="tooltip">点击图中热区，查看详细说明</div>
+  </div>
+
+  <!-- Modal遮罩层及下滑板 -->
+  <div id="modal-overlay">
+    <div id="modal-panel">
+      <div class="modal-header">
+        <div class="drag-bar"></div>
+        <button id="modal-close" title="关闭详情">×</button>
+      </div>
+      <!-- 模态窗口内容区域 -->
+      <div id="modal-content-container">
+        <!-- 初始为主菜单 -->
+        <div id="modal-main-menu">
+          <div class="menu-item" id="menu-super">Super</div>
+          <div class="menu-item" id="menu-tailboard">尾板</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const themeToggle = document.getElementById("theme-toggle");
+      const lightIcon = document.getElementById("light-icon");
+      const darkIcon = document.getElementById("dark-icon");
+      const tooltip = document.getElementById("tooltip");
+      const highlightArea = document.getElementById("editable-hotspot-2");
+      const modalOverlay = document.getElementById("modal-overlay");
+      const modalPanel = document.getElementById("modal-panel");
+      const modalContentContainer = document.getElementById("modal-content-container");
+      const modalClose = document.getElementById("modal-close");
+
+      // 隐藏 tooltip
+      setTimeout(() => {
+        tooltip.style.opacity = "0";
+        setTimeout(() => { tooltip.style.display = "none"; }, 500);
+      }, 3000);
+
+      // 点击热区时显示 modal（初始状态为主菜单）
+      highlightArea.addEventListener("click", function (e) {
+        e.stopPropagation();
+        this.classList.add("active");
+        modalOverlay.style.display = "block";
+        setTimeout(() => {
+          modalPanel.classList.add("show");
+        }, 10);
+      });
+
+      // 关闭 modal
+      modalClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        closeModal();
+      });
+      modalOverlay.addEventListener("click", function (e) {
+        if (e.target === modalOverlay) {
+          closeModal();
+        }
+      });
+      function closeModal() {
+        modalPanel.classList.remove("show");
+        setTimeout(() => {
+          modalOverlay.style.display = "none";
+          // 恢复主菜单状态
+          showMainMenu();
+          highlightArea.classList.remove("active");
+        }, 300);
+      }
+
+      // 主菜单事件监听
+      document.getElementById("menu-super").addEventListener("click", function () {
+        showDetail("super");
+      });
+      document.getElementById("menu-tailboard").addEventListener("click", function () {
+        showDetail("tailboard");
+      });
+
+      // 显示详情内容，type 可选 "super" 或 "tailboard"
+      function showDetail(type) {
+        let detailContent = "";
+        if (type === "super") {
+          detailContent = `
+          <div class="detail-section">
+            <span class="back-button" id="modal-back">&larr; 返回</span>
+            <h3>一、Super</h3>
+            <ul>
+              <li>
+                <strong>位置布局</strong>
+                <div class="detail-box">
+                  位置信息：文字信息放置在画面右下角<br>
+                  安全区域：保持距离画面边缘至少画面高度的5%，法务备注字号及血线位置固定<br>
+                  分层布局：从上至下顺序为 Super - 卖点备注 - 法务备注<br>
+                  模板参考：
+                </div>
+              </li>
+              <li>
+                <strong>字体字色规范</strong>
+                <div class="detail-box">
+                  字体选择：<br>
+                  中文：方正兰亭黑简体常规<br>
+                  英文：Huawei Sans Regular<br>
+                  字号比例：<br>
+                  主标题：画面高度的3-4%<br>
+                  副标题：画面高度的2-2.5%
+                </div>
+              </li>
+              <li>
+                <strong>展示时长</strong>
+                <div class="detail-box">
+                  出现时间：建议在画面稳定后 0.5-1 秒出现<br>
+                  持续时间：主要信息点保持 3-5 秒<br>
+                  淡入淡出：使用 0.3-0.5 秒的淡入淡出效果，避免突兀
+                </div>
+              </li>
+              <li>
+                <strong>技术规范</strong>
+                <div class="detail-box">
+                  分辨率适配：矢量设计<br>
+                  4K 兼容：确保在 4K 分辨率下文字清晰，无锯齿<br>
+                  多平台适配：考虑移动设备、电视等不同终端的显示效果
+                </div>
+              </li>
+              <li>
+                <strong>导出参数</strong>
+                <div class="detail-box">
+                  文字渲染：采用高质量文字渲染模式<br>
+                  Alpha 通道：保留 alpha 通道，便于后期合成<br>
+                  格式选择：导出为带 Alpha 通道的 ProRes 4444 或 DNxHR
+                </div>
+              </li>
+            </ul>
+          </div>`;
+        } else if (type === "tailboard") {
+          detailContent = `
+          <div class="detail-section">
+            <span class="back-button" id="modal-back">&larr; 返回</span>
+            <h3>二、尾板</h3>
+            <ul>
+              <li>
+                <strong>横版视频尾版规范（16:9）</strong>
+                <div class="detail-box">
+                  用横版 LOGO 标志，水平垂直居中<br>
+                  横版标志的整体高度为 Y，上下间距均为 4Y，两侧宽度间距为 X；<br>
+                  模板文件：<a href="https://onebox.huawei.com/p/afd5ff12c4154d4f1b72ace95ccc36e9" target="_blank">查看链接</a>
+                </div>
+              </li>
+              <li>
+                <strong>竖版视频尾版规范（9:16）</strong>
+                <div class="detail-box">
+                  用竖版 LOGO 标志，水平居中；<br>
+                  竖版标志的整体高度为 Y，上间距为 2.5Y，下间距为 4.5Y，两侧宽度间距为 X；<br>
+                  模板文件：<a href="https://onebox.huawei.com/p/vertical_template_link" target="_blank">查看链接</a>
+                </div>
+              </li>
+              <li>
+                <strong>非凡大师视频尾板</strong>
+                <div class="detail-box">
+                  适用于 Mate 非凡大师版<br>
+                  模板文件：<a href="https://onebox.huawei.com/p/master_template_link" target="_blank">查看链接</a>
+                </div>
+              </li>
+              <li>
+                其它详见 CBG 华为视觉识别规范 V2.1-5-标志在视频中的使用规范
+              </li>
+            </ul>
+          </div>`;
+        }
+        modalContentContainer.innerHTML = detailContent;
+        // 为返回按钮添加点击事件
+        document.getElementById("modal-back").addEventListener("click", function () {
+          showMainMenu();
+        });
+      }
+
+      // 恢复显示主菜单内容
+      function showMainMenu() {
+        modalContentContainer.innerHTML = `
+          <div id="modal-main-menu">
+            <div class="menu-item" id="menu-super">Super</div>
+            <div class="menu-item" id="menu-tailboard">尾板</div>
+          </div>
+        `;
+        document.getElementById("menu-super").addEventListener("click", function () {
+          showDetail("super");
+        });
+        document.getElementById("menu-tailboard").addEventListener("click", function () {
+          showDetail("tailboard");
+        });
+      }
+
+      // 主题切换逻辑
+      themeToggle.addEventListener("click", function () {
+        document.body.classList.toggle("dark");
+        updateThemeIcon();
+        try {
+          localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+        } catch (e) {
+          console.log("无法保存主题设置");
+        }
+      });
+      function updateThemeIcon() {
+        if (document.body.classList.contains("dark")) {
+          lightIcon.classList.add("hidden");
+          darkIcon.classList.remove("hidden");
+        } else {
+          lightIcon.classList.remove("hidden");
+          darkIcon.classList.add("hidden");
+        }
+      }
+      function initTheme() {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        try {
+          const savedTheme = localStorage.getItem("theme");
+          if (savedTheme) {
+            if (savedTheme === "dark") {
+              document.body.classList.add("dark");
+            }
+            updateThemeIcon();
+            return;
+          }
+        } catch (e) {
+          console.log("访问 localStorage 失败，使用系统偏好");
+        }
+        if (prefersDark) {
+          document.body.classList.add("dark");
+        }
+        updateThemeIcon();
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", event => {
+          if (event.matches) {
+            document.body.classList.add("dark");
+          } else {
+            document.body.classList.remove("dark");
+          }
+          updateThemeIcon();
+        });
+      }
+      initTheme();
+    });
+  </script>
+
+
+</body></html>
